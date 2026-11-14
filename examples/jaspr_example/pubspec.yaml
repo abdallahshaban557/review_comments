@@ -1,0 +1,23 @@
+name: jaspr_review_comments_example
+description: >-
+  Minimal runnable Jaspr and jaspr_content example demonstrating visual review
+  and GitHub PR diff comments with review_comments_jaspr.
+publish_to: none
+
+environment:
+  sdk: ^3.11.0
+
+dependencies:
+  jaspr: ^0.23.0
+  jaspr_content: ^0.5.0
+  review_comments_jaspr: ^0.1.0
+
+dev_dependencies:
+  lints: ^5.0.0
+  test: ^1.25.0
+
+dependency_overrides:
+  review_comments:
+    path: ../../packages/review_comments
+  review_comments_jaspr:
+    path: ../../packages/review_comments_jaspr

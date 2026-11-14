@@ -1,0 +1,37 @@
+name: review_comments_flutter
+description: >-
+  All-in-one Flutter Web visual highlight, local coding-agent sync CLI, and
+  GitHub PR diff comment overlay with zero-cost multi-platform stubs.
+version: 0.1.0
+repository: https://github.com/abdallahshaban557/review_comments
+issue_tracker: https://github.com/abdallahshaban557/review_comments/issues
+topics:
+  - flutter
+  - web
+  - code-review
+  - github
+  - developer-tools
+
+environment:
+  sdk: ^3.11.0
+  flutter: ">=3.24.0"
+
+executables:
+  review_comments: review_comments
+
+dependencies:
+  cupertino_ui: ^1.0.0
+  flutter:
+    sdk: flutter
+  material_ui: ^1.1.0
+  review_comments: ^0.1.0
+  web: ^1.1.0
+
+dependency_overrides:
+  review_comments:
+    path: ../review_comments
+
+dev_dependencies:
+  flutter_lints: ">=5.0.0 <7.0.0"
+  flutter_test:
+    sdk: flutter

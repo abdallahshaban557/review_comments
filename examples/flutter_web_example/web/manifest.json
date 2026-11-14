@@ -1,0 +1,9 @@
+{
+  "name": "flutter_web_example",
+  "short_name": "flutter_review",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#F8FAFC",
+  "theme_color": "#2563EB",
+  "description": "Flutter Web visual review and PR comment overlay demo."
+}

@@ -1,0 +1,30 @@
+name: flutter_web_example
+description: >-
+  Two-route Flutter Web demo application showcasing live widget highlighting,
+  local coding-agent sync, and GitHub PR diff review comments.
+publish_to: 'none'
+version: 0.1.0+1
+
+environment:
+  sdk: ^3.11.0
+  flutter: ">=3.47.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  material_ui: ^1.1.0
+  review_comments_flutter: ^0.1.0
+
+dependency_overrides:
+  review_comments:
+    path: ../../packages/review_comments
+  review_comments_flutter:
+    path: ../../packages/review_comments_flutter
+
+dev_dependencies:
+  flutter_lints: ">=5.0.0 <7.0.0"
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true

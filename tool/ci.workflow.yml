@@ -1,0 +1,90 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  dart-packages:
+    name: Pure Dart & Jaspr Packages (${{ matrix.pkg }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        pkg:
+          - packages/review_comments
+          - packages/review_comments_jaspr
+          - examples/jaspr_example
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
+
+      - name: Install dependencies
+        working-directory: ${{ matrix.pkg }}
+        run: dart pub get
+
+      - name: Verify formatting
+        working-directory: ${{ matrix.pkg }}
+        run: dart format --output=none --set-exit-if-changed .
+
+      - name: Analyze Dart source
+        working-directory: ${{ matrix.pkg }}
+        run: dart analyze --fatal-infos
+
+      - name: Run unit tests
+        working-directory: ${{ matrix.pkg }}
+        run: dart test
+
+  flutter-packages:
+    name: Flutter Web Package & Example (${{ matrix.pkg }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        pkg:
+          - packages/review_comments_flutter
+          - examples/flutter_web_example
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Install dependencies
+        working-directory: ${{ matrix.pkg }}
+        run: flutter pub get
+
+      - name: Verify formatting
+        working-directory: ${{ matrix.pkg }}
+        run: dart format --output=none --set-exit-if-changed .
+
+      - name: Analyze Flutter source
+        working-directory: ${{ matrix.pkg }}
+        run: flutter analyze --fatal-infos
+
+      - name: Run widget tests
+        working-directory: ${{ matrix.pkg }}
+        run: flutter test
+
+      - name: Verify zero-byte production web tree-shaking
+        if: matrix.pkg == 'examples/flutter_web_example'
+        working-directory: examples/flutter_web_example
+        run: |
+          flutter build web
+          if grep -rn "dash-review" build/web/; then
+            echo "ERROR: Production flutter build web leaked review overlay bytes!"
+            exit 1
+          fi

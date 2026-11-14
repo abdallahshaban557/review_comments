@@ -1,0 +1,21 @@
+# Dart & Flutter build/tooling artifacts
+.dart_tool/
+.packages
+build/
+_site/
+.flutter-plugins
+.flutter-plugins-dependencies
+coverage/
+
+# Local visual review sync stores
+.review_comments/
+.dash_review/
+
+# Library package lockfiles (pub.dev best practice)
+packages/*/pubspec.lock
+
+# Editor & OS files
+.idea/
+.vscode/
+*.iml
+.DS_Store

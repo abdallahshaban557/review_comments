@@ -1,0 +1,32 @@
+name: review_comments_jaspr
+description: >-
+  All-in-one Jaspr and jaspr_content plugin for visual review overlays, local
+  coding-agent sync CLI, and inline GitHub PR diff comments.
+version: 0.1.0
+repository: https://github.com/abdallahshaban557/review_comments
+issue_tracker: https://github.com/abdallahshaban557/review_comments/issues
+topics:
+  - jaspr
+  - code-review
+  - github
+  - web
+  - developer-tools
+
+environment:
+  sdk: ^3.11.0
+
+executables:
+  review_comments: review_comments
+
+dependencies:
+  jaspr: ^0.23.0
+  jaspr_content: ^0.5.0
+  review_comments: ^0.1.0
+
+dev_dependencies:
+  lints: ^5.0.0
+  test: ^1.25.0
+
+dependency_overrides:
+  review_comments:
+    path: ../review_comments
