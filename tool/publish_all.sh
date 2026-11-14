@@ -74,10 +74,10 @@ strip_overrides "${JASPR_PUBSPEC}"
 strip_overrides "${FLUTTER_PUBSPEC}"
 
 echo "==> [2/3] Publishing review_comments_jaspr..."
-(cd "${REPO_ROOT}/packages/review_comments_jaspr" && dart pub get && dart pub publish --force --ignore-warnings)
+(cd "${REPO_ROOT}/packages/review_comments_jaspr" && dart pub get && dart pub publish --force)
 
 echo "==> [3/3] Publishing review_comments_flutter..."
-(cd "${REPO_ROOT}/packages/review_comments_flutter" && flutter pub get && flutter pub publish --force --ignore-warnings)
+(cd "${REPO_ROOT}/packages/review_comments_flutter" && flutter pub get && flutter pub publish --force)
 
 echo ""
 echo "All 3 packages published! Assign them to your personal verified publisher at:"
