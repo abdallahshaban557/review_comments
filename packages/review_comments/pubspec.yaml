@@ -2,7 +2,7 @@ name: review_comments
 description: >-
   Core runtime, local sync server, source-line locator, and coding-agent CLI
   for Jaspr and Flutter Web visual review and PR diff comments.
-version: 0.1.0
+version: 0.2.0
 repository: https://github.com/abdallahshaban557/review_comments
 issue_tracker: https://github.com/abdallahshaban557/review_comments/issues
 topics:

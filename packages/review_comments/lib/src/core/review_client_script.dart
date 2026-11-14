@@ -2286,10 +2286,21 @@ const String _reviewClientScriptBody = r'''
           'data-testid': 'dr-composer-textarea'
         }
       });
+      if (state.composerDraft.draftText) {
+        textarea.value = state.composerDraft.draftText;
+      }
+      textarea.addEventListener('input', function () {
+        if (state.composerDraft) {
+          state.composerDraft.draftText = textarea.value;
+        }
+      });
 
       async function handleSubmit() {
         const text = textarea.value.trim();
         if (!text || state.submitting) return;
+        if (state.composerDraft) {
+          state.composerDraft.draftText = textarea.value;
+        }
         state.submitting = true;
         renderComposer();
         try {
@@ -2393,34 +2404,28 @@ const String _reviewClientScriptBody = r'''
           cfg.mode === 'preview' && !token
             ? el('div', {
                 className: 'dr-notice',
-                text: 'No GitHub token configured — save a token in Settings for 1-click inline PR diff comments, or copy the gh CLI command below.'
+                text: 'No GitHub token saved — add a token for 1-click PR comments, or pin & copy a gh CLI command.'
               })
             : null,
           el('div', { className: 'dr-popover-actions' }, [
             el('div', { className: 'dr-action-group' }, [
-              cfg.mode === 'preview'
+              cfg.mode === 'preview' && !token
                 ? el(
                     'button',
                     {
                       className: 'dr-btn dr-btn-secondary',
-                      attrs: { type: 'button', 'data-testid': 'dr-composer-copy-gh' },
+                      attrs: { type: 'button', 'data-testid': 'dr-composer-open-settings' },
                       on: {
-                        click: async function () {
-                          const ctx = getEffectivePageContext();
-                          const temp = normalizeCommentRecord(
-                            Object.assign({}, draft, {
-                              comment: textarea.value.trim() || 'Review feedback'
-                            }),
-                            cfg,
-                            ctx
-                          );
-                          const savedTok = safeStorageGet(STORAGE_TOKEN_KEY).trim();
-                          await applyBestEffortPrDiffMapping(temp, savedTok);
-                          await copyToClipboard(buildGhCliCommand(temp), 'Copied gh CLI command');
+                        click: function () {
+                          if (state.composerDraft) {
+                            state.composerDraft.draftText = textarea.value;
+                          }
+                          state.settingsOpen = true;
+                          renderSettingsModal();
                         }
                       }
                     },
-                    [icon('terminal', 13), 'Copy gh CLI Command']
+                    [icon('settings', 13), 'Add GitHub Token…']
                   )
                 : null
             ]),
@@ -3023,6 +3028,7 @@ const String _reviewClientScriptBody = r'''
         }
         state.settingsOpen = false;
         renderSettingsModal();
+        renderComposer();
         renderToolbar();
         showToast('Saved review settings');
       }

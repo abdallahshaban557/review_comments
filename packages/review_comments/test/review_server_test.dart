@@ -70,25 +70,28 @@ void main() {
   }
 
   group('ReviewLocalServer binding and security', () {
-    test('binds strictly to 127.0.0.1, defaults to .review_comments, and falls back when port is busy', () async {
-      final blocker = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
-      addTearDown(() => blocker.close(force: true));
+    test(
+      'binds strictly to 127.0.0.1, defaults to .review_comments, and falls back when port is busy',
+      () async {
+        final blocker = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+        addTearDown(() => blocker.close(force: true));
 
-      final server = await ReviewLocalServer.start(
-        repoRoot: tempRepo.path,
-        preferredPort: blocker.port,
-      );
-      addTearDown(server.close);
+        final server = await ReviewLocalServer.start(
+          repoRoot: tempRepo.path,
+          preferredPort: blocker.port,
+        );
+        addTearDown(server.close);
 
-      expect(server.address, InternetAddress.loopbackIPv4);
-      expect(server.port, isNot(equals(blocker.port)));
-      expect(server.port, greaterThan(0));
+        expect(server.address, InternetAddress.loopbackIPv4);
+        expect(server.port, isNot(equals(blocker.port)));
+        expect(server.port, greaterThan(0));
 
-      final health = await sendJsonRequest(server.port, 'GET', '/api/health');
-      expect(health.status, HttpStatus.ok);
-      expect(health.json['ok'], isTrue);
-      expect(health.json['feedbackFile'], '.review_comments/feedback.md');
-    });
+        final health = await sendJsonRequest(server.port, 'GET', '/api/health');
+        expect(health.status, HttpStatus.ok);
+        expect(health.json['ok'], isTrue);
+        expect(health.json['feedbackFile'], '.review_comments/feedback.md');
+      },
+    );
 
     test('rejects DNS-rebinding Host headers with 403', () async {
       final server = await ReviewLocalServer.start(
@@ -116,32 +119,35 @@ void main() {
       expect(localhostHost.json['ok'], isTrue);
     });
 
-    test('survives abrupt client socket disconnects during 403 and OPTIONS responses', () async {
-      final server = await ReviewLocalServer.start(
-        repoRoot: tempRepo.path,
-        preferredPort: 0,
-      );
-      addTearDown(server.close);
+    test(
+      'survives abrupt client socket disconnects during 403 and OPTIONS responses',
+      () async {
+        final server = await ReviewLocalServer.start(
+          repoRoot: tempRepo.path,
+          preferredPort: 0,
+        );
+        addTearDown(server.close);
 
-      final rawSocket = await Socket.connect(
-        InternetAddress.loopbackIPv4,
-        server.port,
-      );
-      rawSocket.write(
-        'GET /api/health HTTP/1.1\r\n'
-        'Host: attacker.example.com\r\n\r\n',
-      );
-      rawSocket.destroy();
-      await Future<void>.delayed(const Duration(milliseconds: 50));
+        final rawSocket = await Socket.connect(
+          InternetAddress.loopbackIPv4,
+          server.port,
+        );
+        rawSocket.write(
+          'GET /api/health HTTP/1.1\r\n'
+          'Host: attacker.example.com\r\n\r\n',
+        );
+        rawSocket.destroy();
+        await Future<void>.delayed(const Duration(milliseconds: 50));
 
-      final afterAbort = await sendJsonRequest(
-        server.port,
-        'GET',
-        '/api/health',
-      );
-      expect(afterAbort.status, HttpStatus.ok);
-      expect(afterAbort.json['ok'], isTrue);
-    });
+        final afterAbort = await sendJsonRequest(
+          server.port,
+          'GET',
+          '/api/health',
+        );
+        expect(afterAbort.status, HttpStatus.ok);
+        expect(afterAbort.json['ok'], isTrue);
+      },
+    );
 
     test(
       'enforces strict localhost/127.0.0.1 CORS and handles OPTIONS preflight',
@@ -189,18 +195,19 @@ void main() {
         );
         expect(evilPost.status, HttpStatus.forbidden);
         expect(
-          File(path.join(tempRepo.path, '.review_comments', 'comments.json'))
-              .existsSync(),
+          File(
+            path.join(tempRepo.path, '.review_comments', 'comments.json'),
+          ).existsSync(),
           isFalse,
         );
       },
     );
   });
 
-  group(
-    'ReviewLocalServer CRUD, Flutter inspector lines, and custom directory',
-    () {
-      test('supports full CRUD in default .review_comments with Flutter pre-resolved lines and widget selectors', () async {
+  group('ReviewLocalServer CRUD, Flutter inspector lines, and custom directory', () {
+    test(
+      'supports full CRUD in default .review_comments with Flutter pre-resolved lines and widget selectors',
+      () async {
         final screenFile = writeRepoFile('lib/screens/checkout_screen.dart', '''
 import 'package:flutter/material.dart';
 
@@ -316,60 +323,56 @@ class CheckoutCard extends StatelessWidget {
           'resolved': 0,
           'total': 0,
         });
-      });
+      },
+    );
 
-      test(
-        'supports custom .dash_review directory and custom cliResolveCommand',
-        () async {
-          writeRepoFile('sites/docs/src/content/ui/layout/index.md', '''
+    test(
+      'supports custom .dash_review directory and custom cliResolveCommand',
+      () async {
+        writeRepoFile('sites/docs/src/content/ui/layout/index.md', '''
 ## Row and Column
 
 Use [`Row`](/ui/row) and `Column` to position widgets.
 ''');
 
-          final server = await ReviewLocalServer.start(
-            repoRoot: tempRepo.path,
-            site: 'docs',
-            preferredPort: 0,
-            config: ReviewProjectConfig.flutterWebsite(),
-          );
-          addTearDown(server.close);
+        final server = await ReviewLocalServer.start(
+          repoRoot: tempRepo.path,
+          site: 'docs',
+          preferredPort: 0,
+          config: ReviewProjectConfig.flutterWebsite(),
+        );
+        addTearDown(server.close);
 
-          final health = await sendJsonRequest(
-            server.port,
-            'GET',
-            '/api/health',
-          );
-          expect(health.json['feedbackFile'], '.dash_review/feedback.md');
+        final health = await sendJsonRequest(server.port, 'GET', '/api/health');
+        expect(health.json['feedbackFile'], '.dash_review/feedback.md');
 
-          final createRes = await sendJsonRequest(
-            server.port,
-            'POST',
-            '/api/comments',
-            body: {
-              'site': 'docs',
-              'pageUrl': '/ui/layout/',
-              'sourceFile': 'sites/docs/src/content/ui/layout/index.md',
-              'selectedText': 'Use Row and Column to position widgets.',
-              'comment': 'Mention Flex as well.',
-            },
-          );
-          expect(createRes.status, HttpStatus.created);
-          expect(createRes.json['feedbackFile'], '.dash_review/feedback.md');
+        final createRes = await sendJsonRequest(
+          server.port,
+          'POST',
+          '/api/comments',
+          body: {
+            'site': 'docs',
+            'pageUrl': '/ui/layout/',
+            'sourceFile': 'sites/docs/src/content/ui/layout/index.md',
+            'selectedText': 'Use Row and Column to position widgets.',
+            'comment': 'Mention Flex as well.',
+          },
+        );
+        expect(createRes.status, HttpStatus.created);
+        expect(createRes.json['feedbackFile'], '.dash_review/feedback.md');
 
-          final created = (createRes.json['comment'] as Map)
-              .cast<String, Object?>();
-          final id = created['id'] as String;
+        final created = (createRes.json['comment'] as Map)
+            .cast<String, Object?>();
+        final id = created['id'] as String;
 
-          final feedbackFile = File(
-            path.join(tempRepo.path, '.dash_review', 'feedback.md'),
-          );
-          expect(feedbackFile.existsSync(), isTrue);
-          final md = feedbackFile.readAsStringSync();
-          expect(md, contains('.dash_review/feedback.md'));
-          expect(md, contains('dart run dash_site review resolve $id'));
-        },
-      );
-    },
-  );
+        final feedbackFile = File(
+          path.join(tempRepo.path, '.dash_review', 'feedback.md'),
+        );
+        expect(feedbackFile.existsSync(), isTrue);
+        final md = feedbackFile.readAsStringSync();
+        expect(md, contains('.dash_review/feedback.md'));
+        expect(md, contains('dart run dash_site review resolve $id'));
+      },
+    );
+  });
 }

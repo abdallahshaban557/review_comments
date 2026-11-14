@@ -133,86 +133,97 @@ void main() {
       expect(store.loadComments(), isEmpty);
     });
 
-    test('clear and resolve --all do not create .review_comments in a clean workspace', () async {
-      final reviewDir = Directory(path.join(tempRepo.path, '.review_comments'));
-      expect(reviewDir.existsSync(), isFalse);
+    test(
+      'clear and resolve --all do not create .review_comments in a clean workspace',
+      () async {
+        final reviewDir = Directory(
+          path.join(tempRepo.path, '.review_comments'),
+        );
+        expect(reviewDir.existsSync(), isFalse);
 
-      final resolveAllRes = await runStandaloneCli(['resolve', '--all']);
-      expect(resolveAllRes.exitCode, 0);
-      expect(reviewDir.existsSync(), isFalse);
+        final resolveAllRes = await runStandaloneCli(['resolve', '--all']);
+        expect(resolveAllRes.exitCode, 0);
+        expect(reviewDir.existsSync(), isFalse);
 
-      final clearResolvedRes = await runStandaloneCli(['clear']);
-      expect(clearResolvedRes.exitCode, 0);
-      expect(reviewDir.existsSync(), isFalse);
+        final clearResolvedRes = await runStandaloneCli(['clear']);
+        expect(clearResolvedRes.exitCode, 0);
+        expect(reviewDir.existsSync(), isFalse);
 
-      final clearAllRes = await runStandaloneCli(['clear', '--all']);
-      expect(clearAllRes.exitCode, 0);
-      expect(reviewDir.existsSync(), isFalse);
-    });
+        final clearAllRes = await runStandaloneCli(['clear', '--all']);
+        expect(clearAllRes.exitCode, 0);
+        expect(reviewDir.existsSync(), isFalse);
+      },
+    );
   });
 
   group('Embedded ReviewCommand mounted in host CommandRunner', () {
-    test('supports custom reviewDirectoryName (.dash_review), cliCommandDisplay, and global --site', () async {
-      final preset = ReviewProjectConfig.flutterWebsite();
-      final store = ReviewCommentStore(tempRepo.path, config: preset);
-      store.saveComments([
-        sampleComment(
-          id: 'rv_docs_1',
-          site: 'docs',
-          pageUrl: '/ui/layout/',
-          resolvedFile: 'sites/docs/src/content/ui/layout/index.md',
-          startLine: 12,
-          comment: 'Docs feedback.',
-        ),
-        sampleComment(
-          id: 'rv_www_1',
-          site: 'www',
-          pageUrl: '/',
-          resolvedFile: 'sites/www/lib/src/pages/home_page.dart',
-          startLine: 44,
-          comment: 'WWW feedback.',
-        ),
-      ]);
+    test(
+      'supports custom reviewDirectoryName (.dash_review), cliCommandDisplay, and global --site',
+      () async {
+        final preset = ReviewProjectConfig.flutterWebsite();
+        final store = ReviewCommentStore(tempRepo.path, config: preset);
+        store.saveComments([
+          sampleComment(
+            id: 'rv_docs_1',
+            site: 'docs',
+            pageUrl: '/ui/layout/',
+            resolvedFile: 'sites/docs/src/content/ui/layout/index.md',
+            startLine: 12,
+            comment: 'Docs feedback.',
+          ),
+          sampleComment(
+            id: 'rv_www_1',
+            site: 'www',
+            pageUrl: '/',
+            resolvedFile: 'sites/www/lib/src/pages/home_page.dart',
+            startLine: 44,
+            comment: 'WWW feedback.',
+          ),
+        ]);
 
-      Future<({int exitCode, String stdout})> runHost(List<String> args) async {
-        final out = StringBuffer();
-        final err = StringBuffer();
-        final hostRunner = CommandRunner<int>('dart run dash_site', 'Host CLI')
-          ..argParser.addOption(
-            'site',
-            allowed: const ['docs', 'www'],
-            defaultsTo: 'docs',
-          )
-          ..addCommand(
-            ReviewCommand(
-              repoRoot: tempRepo.path,
-              config: preset,
-              cliCommandDisplay: 'dart run dash_site review',
-              out: out,
-              err: err,
-            ),
-          );
-        final code = await hostRunner.run(args) ?? 0;
-        return (exitCode: code, stdout: out.toString());
-      }
+        Future<({int exitCode, String stdout})> runHost(
+          List<String> args,
+        ) async {
+          final out = StringBuffer();
+          final err = StringBuffer();
+          final hostRunner =
+              CommandRunner<int>('dart run dash_site', 'Host CLI')
+                ..argParser.addOption(
+                  'site',
+                  allowed: const ['docs', 'www'],
+                  defaultsTo: 'docs',
+                )
+                ..addCommand(
+                  ReviewCommand(
+                    repoRoot: tempRepo.path,
+                    config: preset,
+                    cliCommandDisplay: 'dart run dash_site review',
+                    out: out,
+                    err: err,
+                  ),
+                );
+          final code = await hostRunner.run(args) ?? 0;
+          return (exitCode: code, stdout: out.toString());
+        }
 
-      final unparsedGlobal = await runHost(['review', 'list']);
-      expect(unparsedGlobal.exitCode, 0);
-      expect(unparsedGlobal.stdout, contains('rv_docs_1'));
-      expect(unparsedGlobal.stdout, contains('rv_www_1'));
+        final unparsedGlobal = await runHost(['review', 'list']);
+        expect(unparsedGlobal.exitCode, 0);
+        expect(unparsedGlobal.stdout, contains('rv_docs_1'));
+        expect(unparsedGlobal.stdout, contains('rv_www_1'));
 
-      final globalWww = await runHost(['--site=www', 'review', 'list']);
-      expect(globalWww.exitCode, 0);
-      expect(globalWww.stdout, contains('rv_www_1'));
-      expect(globalWww.stdout, isNot(contains('rv_docs_1')));
+        final globalWww = await runHost(['--site=www', 'review', 'list']);
+        expect(globalWww.exitCode, 0);
+        expect(globalWww.stdout, contains('rv_www_1'));
+        expect(globalWww.stdout, isNot(contains('rv_docs_1')));
 
-      final promptDocs = await runHost(['review', 'prompt', '--site=docs']);
-      expect(promptDocs.exitCode, 0);
-      expect(
-        promptDocs.stdout,
-        contains('dart run dash_site review resolve rv_docs_1'),
-      );
-    });
+        final promptDocs = await runHost(['review', 'prompt', '--site=docs']);
+        expect(promptDocs.exitCode, 0);
+        expect(
+          promptDocs.stdout,
+          contains('dart run dash_site review resolve rv_docs_1'),
+        );
+      },
+    );
   });
 
   group('review_comments serve & buildWrappedDevCommandArgs', () {
@@ -285,9 +296,11 @@ void main() {
       );
     });
 
-    test('runs wrapped child process with REVIEW_COMMENTS_SERVER_PORT and closes server on exit', () async {
-      final probeScript = File(path.join(tempRepo.path, 'probe.dart'))
-        ..writeAsStringSync('''
+    test(
+      'runs wrapped child process with REVIEW_COMMENTS_SERVER_PORT and closes server on exit',
+      () async {
+        final probeScript = File(path.join(tempRepo.path, 'probe.dart'))
+          ..writeAsStringSync('''
 import 'dart:convert';
 import 'dart:io';
 
@@ -304,15 +317,16 @@ Future<void> main() async {
 }
 ''');
 
-      final result = await runStandaloneCli([
-        'serve',
-        '--port=0',
-        '--',
-        Platform.resolvedExecutable,
-        probeScript.path,
-      ]);
-      expect(result.exitCode, 0);
-      expect(result.stdout, contains('Review comments server active on'));
-    });
+        final result = await runStandaloneCli([
+          'serve',
+          '--port=0',
+          '--',
+          Platform.resolvedExecutable,
+          probeScript.path,
+        ]);
+        expect(result.exitCode, 0);
+        expect(result.stdout, contains('Review comments server active on'));
+      },
+    );
   });
 }

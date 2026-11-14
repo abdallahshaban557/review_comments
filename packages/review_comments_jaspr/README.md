@@ -9,7 +9,7 @@ import**.
 
 ```yaml
 dependencies:
-  review_comments_jaspr: ^0.1.0
+  review_comments_jaspr: ^0.2.0
 ```
 
 ## Quick Start (1 Import)

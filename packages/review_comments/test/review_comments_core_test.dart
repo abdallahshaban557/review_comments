@@ -55,12 +55,14 @@ void main() {
       expect(prodPreview.isEnabled, isFalse);
     });
 
-    test('supports REVIEW_COMMENTS_* and legacy DASH_REVIEW_* dart-defines', () async {
-      final packageRoot = Directory.current.path;
-      final tempDir = await Directory.systemTemp.createTemp('rc_defines_');
-      try {
-        final probe = File('${tempDir.path}/probe.dart');
-        await probe.writeAsString('''
+    test(
+      'supports REVIEW_COMMENTS_* and legacy DASH_REVIEW_* dart-defines',
+      () async {
+        final packageRoot = Directory.current.path;
+        final tempDir = await Directory.systemTemp.createTemp('rc_defines_');
+        try {
+          final probe = File('${tempDir.path}/probe.dart');
+          await probe.writeAsString('''
 import 'dart:convert';
 import 'package:review_comments/review_comments.dart';
 
@@ -79,64 +81,68 @@ void main() {
 }
 ''');
 
-        final pkgConfig = File('$packageRoot/.dart_tool/package_config.json')
-            .path;
+          final pkgConfig = File(
+            '$packageRoot/.dart_tool/package_config.json',
+          ).path;
 
-        // 1. New REVIEW_COMMENTS_* defines take precedence over DASH_REVIEW_*
-        final rcRes = await Process.run(Platform.resolvedExecutable, [
-          '--packages=$pkgConfig',
-          '-DREVIEW_COMMENTS_MODE=local',
-          '-DDASH_REVIEW_MODE=preview',
-          '-DREVIEW_COMMENTS_SERVER_PORT=4123',
-          '-DREVIEW_COMMENTS_SITE=app',
-          probe.path,
-        ]);
-        expect(rcRes.exitCode, equals(0), reason: '${rcRes.stderr}');
-        final rcJson =
-            jsonDecode((rcRes.stdout as String).trim()) as Map<String, Object?>;
-        expect(rcJson['mode'], equals('local'));
-        expect(rcJson['isEnabled'], isTrue);
-        expect(rcJson['site'], equals('app'));
-        expect(rcJson['serverOrigin'], equals('http://127.0.0.1:4123'));
-        expect(rcJson['repo'], equals('fallback/repo'));
+          // 1. New REVIEW_COMMENTS_* defines take precedence over DASH_REVIEW_*
+          final rcRes = await Process.run(Platform.resolvedExecutable, [
+            '--packages=$pkgConfig',
+            '-DREVIEW_COMMENTS_MODE=local',
+            '-DDASH_REVIEW_MODE=preview',
+            '-DREVIEW_COMMENTS_SERVER_PORT=4123',
+            '-DREVIEW_COMMENTS_SITE=app',
+            probe.path,
+          ]);
+          expect(rcRes.exitCode, equals(0), reason: '${rcRes.stderr}');
+          final rcJson =
+              jsonDecode((rcRes.stdout as String).trim())
+                  as Map<String, Object?>;
+          expect(rcJson['mode'], equals('local'));
+          expect(rcJson['isEnabled'], isTrue);
+          expect(rcJson['site'], equals('app'));
+          expect(rcJson['serverOrigin'], equals('http://127.0.0.1:4123'));
+          expect(rcJson['repo'], equals('fallback/repo'));
 
-        // 2. Legacy DASH_REVIEW_* fallback works cleanly
-        final drRes = await Process.run(Platform.resolvedExecutable, [
-          '--packages=$pkgConfig',
-          '-DDASH_REVIEW_MODE=preview',
-          '-DDASH_REVIEW_PR_NUMBER=14030',
-          '-DDASH_REVIEW_REPO=flutter/website',
-          '-DDASH_REVIEW_COMMIT_SHA=abc1234',
-          '-DDASH_REVIEW_HEAD_BRANCH=feat/test',
-          probe.path,
-        ]);
-        expect(drRes.exitCode, equals(0), reason: '${drRes.stderr}');
-        final drJson =
-            jsonDecode((drRes.stdout as String).trim()) as Map<String, Object?>;
-        expect(drJson['mode'], equals('preview'));
-        expect(drJson['isEnabled'], isTrue);
-        expect(drJson['prNumber'], equals('14030'));
-        expect(drJson['repo'], equals('flutter/website'));
-        expect(drJson['commitSha'], equals('abc1234'));
-        expect(drJson['headBranch'], equals('feat/test'));
+          // 2. Legacy DASH_REVIEW_* fallback works cleanly
+          final drRes = await Process.run(Platform.resolvedExecutable, [
+            '--packages=$pkgConfig',
+            '-DDASH_REVIEW_MODE=preview',
+            '-DDASH_REVIEW_PR_NUMBER=14030',
+            '-DDASH_REVIEW_REPO=flutter/website',
+            '-DDASH_REVIEW_COMMIT_SHA=abc1234',
+            '-DDASH_REVIEW_HEAD_BRANCH=feat/test',
+            probe.path,
+          ]);
+          expect(drRes.exitCode, equals(0), reason: '${drRes.stderr}');
+          final drJson =
+              jsonDecode((drRes.stdout as String).trim())
+                  as Map<String, Object?>;
+          expect(drJson['mode'], equals('preview'));
+          expect(drJson['isEnabled'], isTrue);
+          expect(drJson['prNumber'], equals('14030'));
+          expect(drJson['repo'], equals('flutter/website'));
+          expect(drJson['commitSha'], equals('abc1234'));
+          expect(drJson['headBranch'], equals('feat/test'));
 
-        // 3. PRODUCTION=true hard-disables even when REVIEW_COMMENTS_MODE=local
-        final prodRes = await Process.run(Platform.resolvedExecutable, [
-          '--packages=$pkgConfig',
-          '-DPRODUCTION=true',
-          '-DREVIEW_COMMENTS_MODE=local',
-          '-DREVIEW_COMMENTS_SERVER_PORT=4099',
-          probe.path,
-        ]);
-        expect(prodRes.exitCode, equals(0), reason: '${prodRes.stderr}');
-        final prodJson = jsonDecode(
-          (prodRes.stdout as String).trim(),
-        ) as Map<String, Object?>;
-        expect(prodJson['isEnabled'], isFalse);
-      } finally {
-        await tempDir.delete(recursive: true);
-      }
-    });
+          // 3. PRODUCTION=true hard-disables even when REVIEW_COMMENTS_MODE=local
+          final prodRes = await Process.run(Platform.resolvedExecutable, [
+            '--packages=$pkgConfig',
+            '-DPRODUCTION=true',
+            '-DREVIEW_COMMENTS_MODE=local',
+            '-DREVIEW_COMMENTS_SERVER_PORT=4099',
+            probe.path,
+          ]);
+          expect(prodRes.exitCode, equals(0), reason: '${prodRes.stderr}');
+          final prodJson =
+              jsonDecode((prodRes.stdout as String).trim())
+                  as Map<String, Object?>;
+          expect(prodJson['isEnabled'], isFalse);
+        } finally {
+          await tempDir.delete(recursive: true);
+        }
+      },
+    );
 
     test('builds page config map with optional custom feedbackFile', () {
       const cfg = ReviewConfig(
@@ -280,29 +286,34 @@ void main() {
       expect(reviewOverlayClientScript, isNot(contains('<!--')));
     });
 
-    test('passes node syntax validation, security checks, and adapter E2E harness', () async {
-      late final ProcessResult whichNode;
-      try {
-        whichNode = await Process.run('node', const ['--version']);
-      } on ProcessException {
-        return;
-      }
-      if (whichNode.exitCode != 0) return;
+    test(
+      'passes node syntax validation, security checks, and adapter E2E harness',
+      () async {
+        late final ProcessResult whichNode;
+        try {
+          whichNode = await Process.run('node', const ['--version']);
+        } on ProcessException {
+          return;
+        }
+        if (whichNode.exitCode != 0) return;
 
-      final tempDir = await Directory.systemTemp.createTemp('rc_js_harness_');
-      try {
-        final jsFile = File('${tempDir.path}/review_bundle.js');
-        await jsFile.writeAsString(reviewOverlayClientScript);
+        final tempDir = await Directory.systemTemp.createTemp('rc_js_harness_');
+        try {
+          final jsFile = File('${tempDir.path}/review_bundle.js');
+          await jsFile.writeAsString(reviewOverlayClientScript);
 
-        final checkResult = await Process.run('node', ['--check', jsFile.path]);
-        expect(
-          checkResult.exitCode,
-          equals(0),
-          reason: 'node --check stderr: ${checkResult.stderr}',
-        );
+          final checkResult = await Process.run('node', [
+            '--check',
+            jsFile.path,
+          ]);
+          expect(
+            checkResult.exitCode,
+            equals(0),
+            reason: 'node --check stderr: ${checkResult.stderr}',
+          );
 
-        final harnessFile = File('${tempDir.path}/harness.js');
-        await harnessFile.writeAsString(r'''
+          final harnessFile = File('${tempDir.path}/harness.js');
+          await harnessFile.writeAsString(r'''
 const assert = require('node:assert');
 const { execFileSync } = require('node:child_process');
 
@@ -838,19 +849,20 @@ require(process.argv[2]);
 })();
 ''');
 
-        final runResult = await Process.run('node', [
-          harnessFile.path,
-          jsFile.path,
-        ]);
-        expect(
-          runResult.exitCode,
-          equals(0),
-          reason:
-              'JS harness failed:\nstdout: ${runResult.stdout}\nstderr: ${runResult.stderr}',
-        );
-      } finally {
-        await tempDir.delete(recursive: true);
-      }
-    });
+          final runResult = await Process.run('node', [
+            harnessFile.path,
+            jsFile.path,
+          ]);
+          expect(
+            runResult.exitCode,
+            equals(0),
+            reason:
+                'JS harness failed:\nstdout: ${runResult.stdout}\nstderr: ${runResult.stderr}',
+          );
+        } finally {
+          await tempDir.delete(recursive: true);
+        }
+      },
+    );
   });
 }

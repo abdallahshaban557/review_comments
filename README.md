@@ -62,7 +62,7 @@ flowchart LR
 
 ```yaml
 dependencies:
-  review_comments_jaspr: ^0.1.0
+  review_comments_jaspr: ^0.2.0
 ```
 
 ### 2. Register same-origin local sync proxy (`main.server.dart`)
@@ -139,7 +139,7 @@ iOS, Android, macOS, Windows, Linux, and VM `flutter test`.
 
 ```yaml
 dependencies:
-  review_comments_flutter: ^0.1.0
+  review_comments_flutter: ^0.2.0
 
 dev_dependencies:
 ```

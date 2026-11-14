@@ -13,7 +13,7 @@ dependencies:
   flutter:
     sdk: flutter
   material_ui: ^1.1.0
-  review_comments_flutter: ^0.1.0
+  review_comments_flutter: ^0.2.0
 
 dependency_overrides:
   review_comments:

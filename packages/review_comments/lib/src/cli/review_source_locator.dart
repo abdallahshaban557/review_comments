@@ -791,8 +791,9 @@ List<String> _resolveContentRoots({
     }
   }
   for (final candidate in const <String>['content', 'src/content']) {
-    if (Directory(path.joinAll([canonicalRoot, ...path.posix.split(candidate)]))
-        .existsSync()) {
+    if (Directory(
+      path.joinAll([canonicalRoot, ...path.posix.split(candidate)]),
+    ).existsSync()) {
       discovered.add(candidate);
     }
   }
@@ -1346,8 +1347,9 @@ String? _extractFlutterSelectorWidgetName(String? selector) {
   if (selector == null) return null;
   final trimmed = selector.trim();
   if (!trimmed.startsWith('flutter:')) return null;
-  final match = RegExp(r'^flutter:([A-Za-z_$][A-Za-z0-9_$]*)')
-      .firstMatch(trimmed);
+  final match = RegExp(
+    r'^flutter:([A-Za-z_$][A-Za-z0-9_$]*)',
+  ).firstMatch(trimmed);
   return match?.group(1);
 }
 
@@ -1513,16 +1515,18 @@ bool _isWordChar(String ch) {
     // Markdown / Liquid / HTML / YAML projection.
     final atLineStart = i == 0 || content[i - 1] == '\n';
     if (atLineStart) {
-      final fenceMatch = RegExp(r'^[ \t]*(?:```+|~~~+)[^\n]*')
-          .matchAsPrefix(content, i);
+      final fenceMatch = RegExp(
+        r'^[ \t]*(?:```+|~~~+)[^\n]*',
+      ).matchAsPrefix(content, i);
       if (fenceMatch != null) {
         emitSpace(i);
         i = fenceMatch.end;
         continue;
       }
 
-      final alertMatch = RegExp(r'^[ \t]*:::[a-zA-Z0-9_-]*[ \t]*')
-          .matchAsPrefix(content, i);
+      final alertMatch = RegExp(
+        r'^[ \t]*:::[a-zA-Z0-9_-]*[ \t]*',
+      ).matchAsPrefix(content, i);
       if (alertMatch != null) {
         emitSpace(i);
         i = alertMatch.end;
@@ -1623,8 +1627,9 @@ bool _isWordChar(String ch) {
     }
 
     if (ch == '<') {
-      final autolinkMatch = RegExp(r'^<(https?://[^>\s]+)>')
-          .matchAsPrefix(content, i);
+      final autolinkMatch = RegExp(
+        r'^<(https?://[^>\s]+)>',
+      ).matchAsPrefix(content, i);
       if (autolinkMatch != null) {
         final urlText = autolinkMatch.group(1)!;
         for (var k = 0; k < urlText.length; k++) {
@@ -1634,8 +1639,9 @@ bool _isWordChar(String ch) {
         continue;
       }
 
-      final htmlTagMatch = RegExp(r'^</?[a-zA-Z][a-zA-Z0-9-]*(?:\s+[^>\n]*)?>')
-          .matchAsPrefix(content, i);
+      final htmlTagMatch = RegExp(
+        r'^</?[a-zA-Z][a-zA-Z0-9-]*(?:\s+[^>\n]*)?>',
+      ).matchAsPrefix(content, i);
       if (htmlTagMatch != null) {
         final tagLower = htmlTagMatch.group(0)!.toLowerCase();
         if (tagLower.startsWith('<br')) {

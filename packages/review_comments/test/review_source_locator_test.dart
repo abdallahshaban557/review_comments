@@ -70,8 +70,10 @@ Always test with multiple screen sizes.
       expect(multi.endLine, 9);
     });
 
-    test('matches rendered prose across Markdown links, inline code, bold, and snake_case', () {
-      writeRepoFile('content/row-col.md', '''
+    test(
+      'matches rendered prose across Markdown links, inline code, bold, and snake_case',
+      () {
+        writeRepoFile('content/row-col.md', '''
 ---
 title: Row and Column
 ---
@@ -84,19 +86,20 @@ or _cross_ axis properties.
 [col-ref]: https://api.flutter.dev/flutter/widgets/Column-class.html
 ''');
 
-      final located = locateHighlightInRepo(
-        repoRoot: tempRepo.path,
-        sourceFile: 'content/row-col.html',
-        selectedText:
-            'use the Row and Column widgets with flexible Expanded children '
-            'and main_axis_alignment or cross axis properties.',
-      );
+        final located = locateHighlightInRepo(
+          repoRoot: tempRepo.path,
+          sourceFile: 'content/row-col.html',
+          selectedText:
+              'use the Row and Column widgets with flexible Expanded children '
+              'and main_axis_alignment or cross axis properties.',
+        );
 
-      expect(located.resolvedFile, 'content/row-col.md');
-      expect(located.startLine, 6);
-      expect(located.endLine, 8);
-      expect(located.codeSnippet, contains('[`Row`](/ui/widgets/row)'));
-    });
+        expect(located.resolvedFile, 'content/row-col.md');
+        expect(located.startLine, 6);
+        expect(located.endLine, 8);
+        expect(located.codeSnippet, contains('[`Row`](/ui/widgets/row)'));
+      },
+    );
 
     test(
       'resolves multi-site Liquid includes, YAML data, and Jaspr components',
@@ -208,10 +211,10 @@ More details.
     });
   });
 
-  group(
-    'locateHighlightInRepo — Flutter Web widgets, URIs, and inspector lines',
-    () {
-      test('matches single-quoted, double-quoted, escaped, and multi-line Text widgets in lib/**/*.dart', () {
+  group('locateHighlightInRepo — Flutter Web widgets, URIs, and inspector lines', () {
+    test(
+      'matches single-quoted, double-quoted, escaped, and multi-line Text widgets in lib/**/*.dart',
+      () {
         writeRepoFile('lib/models/checkout.g.dart', '''
 // GENERATED CODE - DO NOT MODIFY BY HAND
 const generatedLabel = 'Pay now';
@@ -269,9 +272,12 @@ class CheckoutScreen extends StatelessWidget {
         );
         expect(adjacentMultiLine.startLine, 12);
         expect(adjacentMultiLine.endLine, 13);
-      });
+      },
+    );
 
-      test('normalizes file:// and package: URIs and preserves pre-resolved Flutter startLine', () {
+    test(
+      'normalizes file:// and package: URIs and preserves pre-resolved Flutter startLine',
+      () {
         final mainFile = writeRepoFile('lib/screens/checkout_screen.dart', '''
 import 'package:flutter/material.dart';
 
@@ -340,9 +346,12 @@ void main() {
           preResolvedFromPackageUri.codeSnippet,
           contains('const Icon(Icons.lock)'),
         );
-      });
+      },
+    );
 
-      test('falls back to flutter:<WidgetClass> selector declaration in lib/**/*.dart', () {
+    test(
+      'falls back to flutter:<WidgetClass> selector declaration in lib/**/*.dart',
+      () {
         writeRepoFile('lib/widgets/checkout_card.dart', '''
 import 'package:flutter/material.dart';
 
@@ -364,9 +373,12 @@ class CheckoutCard extends StatelessWidget {
           byWidgetSelector.codeSnippet,
           contains('class CheckoutCard extends StatelessWidget'),
         );
-      });
+      },
+    );
 
-      test('loads review_comments.yaml automatically and skips the review directory itself', () {
+    test(
+      'loads review_comments.yaml automatically and skips the review directory itself',
+      () {
         writeRepoFile('review_comments.yaml', '''
 review_directory: .custom_reviews
 cli_resolve_command: dart run my_tool review resolve
@@ -391,76 +403,73 @@ const label = 'Unique phrase inside review artifact';
         );
         expect(located.resolvedFile, 'app_src/feature.dart');
         expect(located.startLine, 1);
-      });
+      },
+    );
 
-      test(
-        'blocks path traversal, external file:// URIs, and symlink escapes',
-        () {
-          final outsideDir = Directory.systemTemp.createTempSync(
-            'review_comments_outside_',
-          );
-          addTearDown(() {
-            if (outsideDir.existsSync()) {
-              outsideDir.deleteSync(recursive: true);
-            }
-          });
+    test(
+      'blocks path traversal, external file:// URIs, and symlink escapes',
+      () {
+        final outsideDir = Directory.systemTemp.createTempSync(
+          'review_comments_outside_',
+        );
+        addTearDown(() {
+          if (outsideDir.existsSync()) {
+            outsideDir.deleteSync(recursive: true);
+          }
+        });
 
-          final secretFile = File(path.join(outsideDir.path, 'secret.dart'))
-            ..writeAsStringSync("const secret = 'TOP_SECRET_OUTSIDE_TOKEN';\n");
+        final secretFile = File(path.join(outsideDir.path, 'secret.dart'))
+          ..writeAsStringSync("const secret = 'TOP_SECRET_OUTSIDE_TOKEN';\n");
 
-          final symlink = Link(
-            path.join(tempRepo.path, 'lib', 'escaped_secret.dart'),
-          )..createSync(secretFile.path, recursive: true);
-          expect(symlink.existsSync(), isTrue);
+        final symlink = Link(
+          path.join(tempRepo.path, 'lib', 'escaped_secret.dart'),
+        )..createSync(secretFile.path, recursive: true);
+        expect(symlink.existsSync(), isTrue);
 
-          final traversal = locateHighlightInRepo(
-            repoRoot: tempRepo.path,
-            sourceFile: '../../${path.basename(outsideDir.path)}/secret.dart',
-            startLine: 1,
-            selectedText: 'TOP_SECRET_OUTSIDE_TOKEN',
-          );
-          expect(traversal.resolvedFile, isEmpty);
-          expect(traversal.startLine, isNull);
-          expect(traversal.codeSnippet, isNull);
+        final traversal = locateHighlightInRepo(
+          repoRoot: tempRepo.path,
+          sourceFile: '../../${path.basename(outsideDir.path)}/secret.dart',
+          startLine: 1,
+          selectedText: 'TOP_SECRET_OUTSIDE_TOKEN',
+        );
+        expect(traversal.resolvedFile, isEmpty);
+        expect(traversal.startLine, isNull);
+        expect(traversal.codeSnippet, isNull);
 
-          final externalFileUri = locateHighlightInRepo(
-            repoRoot: tempRepo.path,
-            sourceFile: Uri.file(secretFile.path).toString(),
-            startLine: 1,
-            selectedText: 'TOP_SECRET_OUTSIDE_TOKEN',
-          );
-          expect(externalFileUri.resolvedFile, isEmpty);
-          expect(externalFileUri.startLine, isNull);
-          expect(externalFileUri.codeSnippet, isNull);
+        final externalFileUri = locateHighlightInRepo(
+          repoRoot: tempRepo.path,
+          sourceFile: Uri.file(secretFile.path).toString(),
+          startLine: 1,
+          selectedText: 'TOP_SECRET_OUTSIDE_TOKEN',
+        );
+        expect(externalFileUri.resolvedFile, isEmpty);
+        expect(externalFileUri.startLine, isNull);
+        expect(externalFileUri.codeSnippet, isNull);
 
-          final viaSymlink = locateHighlightInRepo(
-            repoRoot: tempRepo.path,
-            sourceFile: 'lib/escaped_secret.dart',
-            startLine: 1,
-            selectedText: 'TOP_SECRET_OUTSIDE_TOKEN',
-          );
-          expect(viaSymlink.resolvedFile, isEmpty);
-          expect(viaSymlink.startLine, isNull);
-          expect(viaSymlink.codeSnippet, isNull);
+        final viaSymlink = locateHighlightInRepo(
+          repoRoot: tempRepo.path,
+          sourceFile: 'lib/escaped_secret.dart',
+          startLine: 1,
+          selectedText: 'TOP_SECRET_OUTSIDE_TOKEN',
+        );
+        expect(viaSymlink.resolvedFile, isEmpty);
+        expect(viaSymlink.startLine, isNull);
+        expect(viaSymlink.codeSnippet, isNull);
 
-          expect(
-            sanitizeRepoRelativePath(tempRepo.path, '../../etc/passwd'),
-            isNull,
-          );
-          expect(
-            normalizeSourcePathInput(tempRepo.path, 'file:///etc/passwd'),
-            isNull,
-          );
-          expect(
-            normalizeSourcePathInput(tempRepo.path, '/etc/passwd'),
-            isNull,
-          );
-          expect(
-            sanitizeRepoRelativePath(tempRepo.path, 'lib/escaped_secret.dart'),
-            isNull,
-          );
-        },
-      );
-    },
-  );
+        expect(
+          sanitizeRepoRelativePath(tempRepo.path, '../../etc/passwd'),
+          isNull,
+        );
+        expect(
+          normalizeSourcePathInput(tempRepo.path, 'file:///etc/passwd'),
+          isNull,
+        );
+        expect(normalizeSourcePathInput(tempRepo.path, '/etc/passwd'), isNull);
+        expect(
+          sanitizeRepoRelativePath(tempRepo.path, 'lib/escaped_secret.dart'),
+          isNull,
+        );
+      },
+    );
+  });
 }

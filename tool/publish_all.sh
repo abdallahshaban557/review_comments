@@ -27,13 +27,15 @@ if [[ ! -f "${CredsA}" && ! -f "${CredsB}" ]]; then
   exit 1
 fi
 
-echo "==> [1/3] Publishing review_comments..."
+VERSION="$(awk '/^version:/{print $2}' "${REPO_ROOT}/packages/review_comments/pubspec.yaml")"
+
+echo "==> [1/3] Publishing review_comments ${VERSION}..."
 (cd "${REPO_ROOT}/packages/review_comments" && dart pub publish --force)
 
-echo "==> Waiting for review_comments 0.1.0 to become visible on pub.dev..."
-for i in {1..30}; do
-  if curl -fsS https://pub.dev/api/packages/review_comments >/dev/null 2>&1; then
-    echo "    review_comments is live on pub.dev!"
+echo "==> Waiting for review_comments ${VERSION} to become visible on pub.dev..."
+for i in {1..40}; do
+  if curl -fsS https://pub.dev/api/packages/review_comments | grep -q "\"${VERSION}\""; then
+    echo "    review_comments ${VERSION} is live on pub.dev!"
     break
   fi
   sleep 3

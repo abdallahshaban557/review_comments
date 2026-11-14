@@ -13,7 +13,7 @@ trees into the shared Shadow-DOM review overlay.
 
 ```yaml
 dependencies:
-  review_comments_flutter: ^0.1.0
+  review_comments_flutter: ^0.2.0
 ```
 
 ## Quick Start (1 Import)

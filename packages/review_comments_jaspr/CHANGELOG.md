@@ -1,9 +1,11 @@
+## 0.2.0
+
+- Bump `review_comments` runtime to `^0.2.0` with streamlined PR Preview
+  composer actions (`Pin & Copy gh CLI` + `Add GitHub Token…` shortcut, and
+  preserved draft text when configuring tokens).
+
 ## 0.1.0
 
-- Initial release of `review_comments_jaspr`.
-- Added `ReviewCommentsOverlay` (`StatelessComponent`) for any Jaspr `Document`
-  or layout.
-- Added `buildReviewOverlayComponents` and `buildReviewPageConfigMap` for
-  `jaspr_content` `PageLayout` subclasses.
-- Added `ReviewCommentsPageExtension` (`PageExtension`) for 1-line `ContentApp`
-  setup.
+- Initial single-package, single-import Jaspr and `jaspr_content` visual review
+  plugin (`ReviewCommentsOverlay`, `ReviewCommentsPageExtension`,
+  `registerReviewLocalProxyMiddleware`, and bundled `review_comments` CLI).

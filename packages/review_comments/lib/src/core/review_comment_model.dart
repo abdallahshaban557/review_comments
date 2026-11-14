@@ -287,8 +287,9 @@ String normalizeReviewPageUrl(String rawUrl) {
   var value = rawUrl.trim();
   if (value.isEmpty) return '/';
 
-  final hashRouteMatch = RegExp(r'^(?:https?:\/\/[^/#]+)?\/?#(\/.*)$')
-      .firstMatch(value);
+  final hashRouteMatch = RegExp(
+    r'^(?:https?:\/\/[^/#]+)?\/?#(\/.*)$',
+  ).firstMatch(value);
   if (hashRouteMatch != null) {
     value = hashRouteMatch.group(1)!;
   } else {
